@@ -36,10 +36,7 @@ export default function Navbar() {
           href="/"
           style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}
         >
-          <Image src="/c3-logo.png" alt="" width={34} height={34} priority />
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 24, color: 'var(--ink)' }}>
-            c³
-          </span>
+          <Image src="/c3-logo.png" alt="c³ logo" width={34} height={34} priority />
         </Link>
 
         <div
@@ -56,13 +53,14 @@ export default function Navbar() {
               key={href}
               href={href}
               style={{
-                fontFamily: 'var(--font-ui)',
+                fontFamily: 'var(--font-display)',
                 fontSize: 15,
-                fontWeight: 600,
+                fontWeight: 700,
                 color: 'var(--ink)',
                 textDecoration: 'none',
                 padding: '8px 14px',
                 borderRadius: 'var(--radius-pill)',
+                transition: 'background var(--dur-quick) var(--ease-smooth)',
               }}
             >
               {label}

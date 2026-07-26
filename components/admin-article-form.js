@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useRef } from 'react';
 import { createArticle, updateArticle, togglePublish, deleteArticle } from '@/app/admin/actions';
 
 const inputStyle = {
@@ -15,7 +15,90 @@ const labelStyle = {
   display: 'block', marginBottom: 4,
 };
 
+function CitationManager({ article }) {
+  const [citations, setCitations] = useState(
+    article?.citations?.length > 0
+      ? article.citations
+      : [{ id: 'c1', marker: '1', title: '', author: '', publication: '', url: '', note: '' }]
+  );
+
+  const update = (i, field, val) => {
+    const next = [...citations];
+    next[i] = { ...next[i], [field]: val };
+    setCitations(next);
+  };
+
+  const addCitation = () => {
+    const nextId = `c${citations.length + 1}`;
+    setCitations([...citations, { id: nextId, marker: String(citations.length + 1), title: '', author: '', publication: '', url: '', note: '' }]);
+  };
+
+  const removeCitation = (i) => {
+    const next = citations.filter((_, idx) => idx !== i);
+    next.forEach((c, idx) => (c.marker = String(idx + 1)));
+    setCitations(next);
+  };
+
+  return (
+    <div style={{ border: '2px dashed var(--border)', borderRadius: 'var(--radius-md)', padding: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <label style={{ ...labelStyle, marginBottom: 0 }}>Citations</label>
+        <button type="button" onClick={addCitation} style={{ fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 700, background: 'var(--blue-tint)', color: 'var(--blue-deep)', border: 'none', padding: '4px 10px', borderRadius: 'var(--radius-pill)', cursor: 'pointer' }}>
+          + Add citation
+        </button>
+      </div>
+      <input type="hidden" name="citations" value={JSON.stringify(citations)} />
+      {citations.map((c, i) => (
+        <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: i < citations.length - 1 ? '1px solid var(--border)' : 'none' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 700, color: 'var(--text-caption)' }}>Citation {i + 1}</span>
+            {citations.length > 1 && (
+              <button type="button" onClick={() => removeCitation(i)} style={{ fontFamily: 'var(--font-ui)', fontSize: 11, fontWeight: 600, background: 'var(--coral-tint)', color: 'var(--coral-deep)', border: 'none', padding: '2px 8px', borderRadius: 'var(--radius-pill)', cursor: 'pointer' }}>
+                Remove
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr' }}>
+            <input placeholder="Title" value={c.title} onChange={(e) => update(i, 'title', e.target.value)} style={{ ...inputStyle, fontSize: 13, padding: '6px 10px' }} />
+            <input placeholder="Author" value={c.author} onChange={(e) => update(i, 'author', e.target.value)} style={{ ...inputStyle, fontSize: 13, padding: '6px 10px' }} />
+            <input placeholder="Publication" value={c.publication} onChange={(e) => update(i, 'publication', e.target.value)} style={{ ...inputStyle, fontSize: 13, padding: '6px 10px' }} />
+            <input placeholder="URL (optional)" value={c.url} onChange={(e) => update(i, 'url', e.target.value)} style={{ ...inputStyle, fontSize: 13, padding: '6px 10px' }} />
+          </div>
+          <input placeholder="Note (optional)" value={c.note} onChange={(e) => update(i, 'note', e.target.value)} style={{ ...inputStyle, fontSize: 13, padding: '6px 10px', marginTop: 8, width: '100%' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ArticleFields({ categories, authors, issues, article }) {
+  const fileInputRef = useRef(null);
+  const [pdfUrl, setPdfUrl] = useState(article?.pdfUrl || '');
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Please select a PDF file.');
+      return;
+    }
+    // Upload via fetch to the server action endpoint
+    const formData = new FormData();
+    formData.append('pdf_file', file);
+    formData.append('article_id', article?.id || 'new');
+    try {
+      const res = await fetch('/api/upload-pdf', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.url) {
+        setPdfUrl(data.url);
+      } else {
+        alert(data.error || 'Upload failed.');
+      }
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    }
+  };
+
   return (
     <>
       <div>
@@ -73,6 +156,41 @@ function ArticleFields({ categories, authors, issues, article }) {
         <label style={labelStyle}>Content (Markdown) *</label>
         <textarea name="markdown_content" required rows={12} style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', fontSize: 14, resize: 'vertical' }} defaultValue={article?.markdownContent || ''} placeholder={'## Your headline\n\nWrite your article in **markdown** here.\n\n> Use blockquotes for pull quotes.'} />
       </div>
+
+      {/* PDF upload */}
+      <div>
+        <label style={labelStyle}>PDF version (optional)</label>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <input name="pdf_url" style={inputStyle} value={pdfUrl} onChange={(e) => setPdfUrl(e.target.value)} placeholder="https://…supabase.co/storage/v1/object/public/pdfs/…" />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 700,
+              background: 'var(--blue-tint)', color: 'var(--blue-deep)', border: '2px solid var(--blue)',
+              padding: '10px 16px', borderRadius: 'var(--radius-md)', cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
+          >
+            Upload PDF
+          </button>
+        </div>
+        <input ref={fileInputRef} type="file" accept="application/pdf" onChange={handleFileSelect} style={{ display: 'none' }} />
+        {pdfUrl && (
+          <a href={pdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-ui)', fontSize: 12, color: 'var(--blue-deep)', marginTop: 4, display: 'inline-block' }}>
+            View current PDF →
+          </a>
+        )}
+      </div>
+
+      {/* Citations */}
+      <CitationManager article={article} />
+
+      {/* Editor's note */}
+      <div>
+        <label style={labelStyle}>Editor's note (optional)</label>
+        <textarea name="editor_note" rows={2} style={{ ...inputStyle, resize: 'vertical' }} defaultValue={article?.editorNote || ''} placeholder="A note from the editor about this piece." />
+      </div>
+
       <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
         <label style={labelStyle}>Status</label>
         <select name="status" style={{ ...inputStyle, width: 'auto' }} defaultValue={article?.status || 'draft'}>

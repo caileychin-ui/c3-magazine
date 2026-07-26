@@ -97,6 +97,36 @@ export default async function ArticlePage({ params }) {
         {/* Content */}
         <MarkdownRenderer content={article.markdownContent} />
 
+        {/* PDF version */}
+        {article.pdfUrl && (
+          <section style={{ marginTop: 32, padding: 20, background: 'var(--blue-tint)', borderRadius: 'var(--radius-md)', border: '1px solid var(--blue)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 24 }}>📄</span>
+              <div style={{ flex: 1 }}>
+                <strong style={{ fontFamily: 'var(--font-display)', fontSize: 15, display: 'block' }}>
+                  Read the PDF version
+                </strong>
+                <p style={{ fontFamily: 'var(--font-ui)', fontSize: 13, color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+                  Download or view this article as a PDF.
+                </p>
+              </div>
+              <a
+                href={article.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700,
+                  background: 'var(--ink)', color: '#fff', textDecoration: 'none',
+                  padding: '10px 20px', borderRadius: 'var(--radius-pill)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                View PDF →
+              </a>
+            </div>
+          </section>
+        )}
+
         {/* Citations */}
         {article.citations?.length > 0 && (
           <section style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid var(--border)' }}>

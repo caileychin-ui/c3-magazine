@@ -24,6 +24,11 @@ export async function createArticle(prevState, formData) {
   const markdownContent = String(formData.get('markdown_content') || '').trim();
   const status = String(formData.get('status') || 'draft');
   const featured = formData.get('featured') === 'on';
+  const pdfUrl = String(formData.get('pdf_url') || '').trim();
+  const editorNote = String(formData.get('editor_note') || '').trim();
+  const citationsJson = String(formData.get('citations') || '[]').trim();
+  let citations;
+  try { citations = JSON.parse(citationsJson); } catch { citations = []; }
 
   if (!title) return { error: 'Title is required.' };
   if (!slug) return { error: 'Slug is required.' };
@@ -43,6 +48,9 @@ export async function createArticle(prevState, formData) {
     markdown_content: markdownContent,
     status,
     featured,
+    pdf_url: pdfUrl || null,
+    editor_note: editorNote || null,
+    citations,
     publish_date: status === 'published' ? new Date().toISOString().split('T')[0] : null,
   });
 
@@ -100,6 +108,11 @@ export async function updateArticle(prevState, formData) {
   const markdownContent = String(formData.get('markdown_content') || '').trim();
   const status = String(formData.get('status') || 'draft');
   const featured = formData.get('featured') === 'on';
+  const pdfUrl = String(formData.get('pdf_url') || '').trim();
+  const editorNote = String(formData.get('editor_note') || '').trim();
+  const citationsJson = String(formData.get('citations') || '[]').trim();
+  let citations;
+  try { citations = JSON.parse(citationsJson); } catch { citations = []; }
 
   if (!id) return { error: 'Article ID is required.' };
   if (!title) return { error: 'Title is required.' };
@@ -120,6 +133,9 @@ export async function updateArticle(prevState, formData) {
     markdown_content: markdownContent,
     status,
     featured,
+    pdf_url: pdfUrl || null,
+    editor_note: editorNote || null,
+    citations,
     publish_date: status === 'published' ? new Date().toISOString().split('T')[0] : null,
   }).eq('id', id);
 
@@ -179,6 +195,31 @@ export async function createAuthor(prevState, formData) {
 
   revalidatePath('/', 'layout');
   return { ok: true, message: `Author "${name}" added.` };
+}
+
+/**
+ * Upload a PDF to the pdfs storage bucket and return the public URL.
+ */
+export async function uploadPdf(prevState, formData) {
+  const editor = await getEditor();
+  if (!editor) return { error: 'You must be signed in as an editor.' };
+
+  const file = formData.get('pdf_file');
+  const articleId = String(formData.get('article_id') || '');
+
+  if (!file || file.size === 0) return { error: 'No file selected.' };
+  if (file.type !== 'application/pdf') return { error: 'File must be a PDF.' };
+
+  const supabase = await createClient();
+  const fileName = `${articleId || 'manual'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+  const { data, error } = await supabase.storage
+    .from('pdfs')
+    .upload(fileName, file, { contentType: 'application/pdf', upsert: true });
+
+  if (error) return { error: 'Upload failed: ' + error.message };
+
+  const { data: urlData } = supabase.storage.from('pdfs').getPublicUrl(fileName);
+  return { ok: true, url: urlData.publicUrl, message: 'PDF uploaded.' };
 }
 
 /**

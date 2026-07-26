@@ -192,11 +192,12 @@ create policy subscribers_read on public.subscribers
 -- ============================================================
 insert into storage.buckets (id, name, public) values
   ('covers', 'covers', true),
-  ('issues', 'issues', true)
+  ('issues', 'issues', true),
+  ('pdfs', 'pdfs', true)
 on conflict (id) do nothing;
 
 create policy covers_public_read on storage.objects
-  for select using (bucket_id in ('covers','issues'));
+  for select using (bucket_id in ('covers','issues','pdfs'));
 create policy covers_editor_write on storage.objects
-  for all using (bucket_id in ('covers','issues') and public.is_editor())
-  with check (bucket_id in ('covers','issues') and public.is_editor());
+  for all using (bucket_id in ('covers','issues','pdfs') and public.is_editor())
+  with check (bucket_id in ('covers','issues','pdfs') and public.is_editor());

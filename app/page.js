@@ -168,41 +168,57 @@ export default async function HomePage() {
         {/* -------------------------------------------------- latest issue -- */}
         {latestIssue && (
           <section style={{ padding: '0 24px 80px', maxWidth: 1100, margin: '0 auto' }}>
-            <div
-              style={{
-                background: latestIssue.color || 'var(--yellow)',
-                border: '2px solid var(--ink)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-sticker)',
-                padding: '32px 28px',
-              }}
-            >
-              <span
+            <Link href="/issues" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+              <div
                 style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: 'var(--track-tag)',
+                  background: latestIssue.color || 'var(--yellow)',
+                  border: '2px solid var(--ink)',
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-sticker)',
+                  padding: '32px 28px',
+                  cursor: 'pointer',
+                  transition: 'transform var(--dur-med) var(--ease-bubble), box-shadow var(--dur-med) var(--ease-smooth)',
                 }}
               >
-                Issue {latestIssue.number} · {latestIssue.season} {latestIssue.year}
-              </span>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, margin: '8px 0 10px' }}>
-                {latestIssue.title}
-              </h2>
-              <p
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: 16,
-                  maxWidth: 620,
-                  margin: 0,
-                  color: 'var(--ink-soft)',
-                }}
-              >
-                {latestIssue.description}
-              </p>
-            </div>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: 'var(--track-tag)',
+                  }}
+                >
+                  Issue {latestIssue.number} · {latestIssue.season} {latestIssue.year}
+                </span>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, margin: '8px 0 10px' }}>
+                  {latestIssue.title}
+                </h2>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 16,
+                    maxWidth: 620,
+                    margin: '0 0 14px',
+                    color: 'var(--ink-soft)',
+                  }}
+                >
+                  {latestIssue.description}
+                </p>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: 'var(--ink)',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: 3,
+                  }}
+                >
+                  Browse all issues →
+                </span>
+              </div>
+            </Link>
           </section>
         )}
       </main>

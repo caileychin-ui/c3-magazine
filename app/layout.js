@@ -1,5 +1,7 @@
 import { Nunito } from 'next/font/google';
 import './globals.css';
+import FloatingBubbles from '@/components/floating-bubbles';
+import PageTransition from '@/components/page-transition';
 
 /**
  * Nunito is the one font in the stack that's actually licensed for the web
@@ -52,7 +54,13 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={nunito.variable}>
-      <body>{children}</body>
+      <body>
+        <FloatingBubbles />
+        <PageTransition />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
