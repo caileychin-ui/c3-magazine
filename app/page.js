@@ -1,66 +1,213 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from 'next/link';
+import { getSiteData } from '@/lib/queries';
+import { isSupabaseConfigured } from '@/lib/config';
+import SetupNotice from './setup-notice';
+import Navbar from '@/components/navbar';
+import Footer from '@/components/footer';
+import ArticleCard from '@/components/article-card';
+import NewsletterForm from '@/components/newsletter-form';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  if (!isSupabaseConfigured()) return <SetupNotice />;
+
+  const { ARTICLES, ISSUES, AUTHORS } = await getSiteData();
+
+  const featured = ARTICLES.find((a) => a.featured) || ARTICLES[0] || null;
+  const rest = ARTICLES.filter((a) => a.id !== featured?.id).slice(0, 6);
+  const latestIssue = ISSUES[0] || null;
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      <Navbar />
+
+      <main>
+        {/* ---------------------------------------------------------- hero -- */}
+        <section
+          style={{
+            position: 'relative',
+            padding: '72px 24px 56px',
+            maxWidth: 1100,
+            margin: '0 auto',
+            textAlign: 'center',
+          }}
+        >
+          <span
+            style={{
+              display: 'inline-block',
+              fontFamily: 'var(--font-ui)',
+              fontSize: 13,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 'var(--track-tag)',
+              background: 'var(--yellow)',
+              border: '2px solid var(--ink)',
+              borderRadius: 'var(--radius-pill)',
+              padding: '6px 16px',
+              boxShadow: 'var(--shadow-sticker)',
+            }}
+          >
+            An education magazine
+          </span>
+
+          <h1
+            className="c3-fluid-hero"
+            style={{
+              fontFamily: 'var(--font-display)',
+              lineHeight: 'var(--leading-heading)',
+              margin: '22px 0 14px',
+            }}
+          >
+            College access, decoded.
+          </h1>
+
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 19,
+              color: 'var(--text-secondary)',
+              maxWidth: 620,
+              margin: '0 auto 28px',
+            }}
+          >
+            Everything you&rsquo;re expected to figure out alone, broken down.
           </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+          <NewsletterForm />
+        </section>
+
+        {/* ------------------------------------------------------ featured -- */}
+        {featured && (
+          <section style={{ padding: '0 24px 56px', maxWidth: 1100, margin: '0 auto' }}>
+            <ArticleCard article={featured} authors={AUTHORS} featured />
+          </section>
+        )}
+
+        {/* --------------------------------------------------------- grid -- */}
+        {rest.length > 0 && (
+          <section style={{ padding: '0 24px 64px', maxWidth: 1100, margin: '0 auto' }}>
+            <h2
+              style={{
+                fontFamily: 'var(--font-headline)',
+                fontSize: 15,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: 'var(--track-tag)',
+                color: 'var(--text-secondary)',
+                margin: '0 0 20px',
+              }}
+            >
+              Latest
+            </h2>
+            <div
+              style={{
+                display: 'grid',
+                gap: 20,
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              }}
+            >
+              {rest.map((a) => (
+                <ArticleCard key={a.id} article={a} authors={AUTHORS} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* -------------------------------------------------- empty state --- */}
+        {ARTICLES.length === 0 && (
+          <section
+            style={{
+              padding: '0 24px 80px',
+              maxWidth: 620,
+              margin: '0 auto',
+              textAlign: 'center',
+            }}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <div
+              style={{
+                background: '#fff',
+                border: '2px dashed var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 40,
+              }}
+            >
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, margin: '0 0 8px' }}>
+                No published stories yet
+              </h2>
+              <p
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: 15,
+                  color: 'var(--text-secondary)',
+                  margin: '0 0 18px',
+                }}
+              >
+                Drafts stay private until you publish them from the studio.
+              </p>
+              <Link
+                href="/admin"
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  textDecoration: 'none',
+                  background: 'var(--ink)',
+                  color: '#fff',
+                  padding: '12px 22px',
+                  borderRadius: 'var(--radius-pill)',
+                  display: 'inline-block',
+                }}
+              >
+                Open the studio
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {/* -------------------------------------------------- latest issue -- */}
+        {latestIssue && (
+          <section style={{ padding: '0 24px 80px', maxWidth: 1100, margin: '0 auto' }}>
+            <div
+              style={{
+                background: latestIssue.color || 'var(--yellow)',
+                border: '2px solid var(--ink)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-sticker)',
+                padding: '32px 28px',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: 'var(--track-tag)',
+                }}
+              >
+                Issue {latestIssue.number} · {latestIssue.season} {latestIssue.year}
+              </span>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 32, margin: '8px 0 10px' }}>
+                {latestIssue.title}
+              </h2>
+              <p
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 16,
+                  maxWidth: 620,
+                  margin: 0,
+                  color: 'var(--ink-soft)',
+                }}
+              >
+                {latestIssue.description}
+              </p>
+            </div>
+          </section>
+        )}
       </main>
-    </div>
+
+      <Footer />
+    </>
   );
 }

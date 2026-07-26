@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Licensed fonts — Nexa, Makcasa, Colinoosh are commercial and are NOT
+# redistributable. Kept locally so dev renders correctly; must never be
+# committed or deployed without a webfont license. See FONTS.md.
+/public/fonts/
+
+# Prototype sources kept for reference during the port
+*.reference
+
+# Supabase
+.env.local
