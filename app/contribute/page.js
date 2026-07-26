@@ -1,5 +1,6 @@
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
+import ContributeForm from '@/components/contribute-form';
 import { FALLBACK_ROLES } from '@/lib/fallback-data';
 
 export const metadata = {
@@ -49,23 +50,7 @@ export default function ContributePage() {
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--text-secondary)', marginBottom: 24 }}>
             Tell us who you are and how you'd like to contribute.
           </p>
-          <form action="/api/contribute" method="POST" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <input type="text" name="name" placeholder="Your name" required style={inputStyle} />
-            <input type="email" name="email" placeholder="Email" required style={inputStyle} />
-            <select name="role" required style={inputStyle}>
-              <option value="">Select a role…</option>
-              {FALLBACK_ROLES.map((r) => <option key={r.key} value={r.key}>{r.title}</option>)}
-            </select>
-            <textarea name="message" placeholder="Tell us about yourself" rows="4" style={{ ...inputStyle, resize: 'vertical' }} />
-            <button type="submit" style={{
-              fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: 16,
-              background: 'var(--ink)', color: '#fff', border: 'none',
-              padding: '14px 28px', borderRadius: 'var(--radius-pill)',
-              cursor: 'pointer', alignSelf: 'flex-start',
-            }}>
-              Submit application
-            </button>
-          </form>
+          <ContributeForm roles={FALLBACK_ROLES} />
         </section>
       </main>
       <Footer />
@@ -73,9 +58,3 @@ export default function ContributePage() {
   );
 }
 
-const inputStyle = {
-  fontFamily: 'var(--font-ui)', fontSize: 16,
-  padding: '12px 16px', border: '2px solid var(--border)',
-  borderRadius: 'var(--radius-md)', background: '#fff',
-  color: 'var(--ink)', outline: 'none',
-};
