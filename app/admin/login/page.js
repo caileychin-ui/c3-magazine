@@ -137,6 +137,21 @@ export default function AdminLoginPage() {
           sign-up.
         </p>
 
+        <a
+          href="/content-guide"
+          style={{
+            fontFamily: 'var(--font-ui)',
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--blue-deep)',
+            textDecoration: 'none',
+            textAlign: 'center',
+            display: 'block',
+          }}
+        >
+          📖 How to set up your account & add content →
+        </a>
+
         <Suspense fallback={null}>
           <LoginForm />
         </Suspense>

@@ -1,8 +1,9 @@
 import { requireEditor } from '@/lib/dal';
-import { getAllArticlesForAdmin, getAllIssuesForAdmin, getSubmissions } from '@/lib/queries';
+import { getAllArticlesForAdmin, getAllIssuesForAdmin, getSubmissions, getCategories, getAuthors } from '@/lib/queries';
 import { isSupabaseConfigured } from '@/lib/config';
 import SetupNotice from '../setup-notice';
 import { signOut } from './login/actions';
+import ArticleForm, { PublishToggle } from '@/components/admin-article-form';
 
 export const metadata = { title: 'Studio' };
 
@@ -45,10 +46,12 @@ export default async function AdminDashboard() {
   // with Supabase and requires an editor role, and RLS backstops both.
   const { profile } = await requireEditor();
 
-  const [articles, issues, submissions] = await Promise.all([
+  const [articles, issues, submissions, categories, authors] = await Promise.all([
     getAllArticlesForAdmin(),
     getAllIssuesForAdmin(),
     getSubmissions(),
+    getCategories(),
+    getAuthors(),
   ]);
 
   const stats = {
@@ -119,6 +122,10 @@ export default async function AdminDashboard() {
         <StatCard label="New submissions" value={newSubs} color="var(--pink-tint)" />
       </div>
 
+      <section style={{ marginBottom: 24 }}>
+        <ArticleForm categories={categories} authors={authors} issues={issues} />
+      </section>
+
       <section
         style={{
           background: '#fff',
@@ -133,8 +140,7 @@ export default async function AdminDashboard() {
 
         {articles.length === 0 ? (
           <p style={{ fontFamily: 'var(--font-ui)', color: 'var(--text-secondary)', fontSize: 15 }}>
-            Nothing here yet. Run <code>node scripts/seed.mjs</code> to import the demo
-            drafts, or create your first article.
+            No articles yet. Click "New article" above to create your first one.
           </p>
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
@@ -154,24 +160,27 @@ export default async function AdminDashboard() {
                 <span style={{ fontFamily: 'var(--font-ui)', fontSize: 15, fontWeight: 600 }}>
                   {a.title}
                 </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: 'var(--track-tag)',
-                    padding: '4px 10px',
-                    borderRadius: 'var(--radius-pill)',
-                    background:
-                      a.status === 'published' ? 'var(--mint-tint)' : 'var(--tangerine-tint)',
-                    color:
-                      a.status === 'published' ? 'var(--mint-deep)' : 'var(--tangerine-deep)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {a.status}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: 'var(--track-tag)',
+                      padding: '4px 10px',
+                      borderRadius: 'var(--radius-pill)',
+                      background:
+                        a.status === 'published' ? 'var(--mint-tint)' : 'var(--tangerine-tint)',
+                      color:
+                        a.status === 'published' ? 'var(--mint-deep)' : 'var(--tangerine-deep)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {a.status}
+                  </span>
+                  <PublishToggle article={a} />
+                </div>
               </li>
             ))}
           </ul>
