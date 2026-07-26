@@ -3,7 +3,9 @@ import { getAllArticlesForAdmin, getAllIssuesForAdmin, getSubmissions, getCatego
 import { isSupabaseConfigured } from '@/lib/config';
 import SetupNotice from '../setup-notice';
 import { signOut } from './login/actions';
-import ArticleForm, { PublishToggle } from '@/components/admin-article-form';
+import ArticleForm, { EditArticleForm, PublishToggle, DeleteButton } from '@/components/admin-article-form';
+import AuthorForm from '@/components/admin-author-form';
+import IssueForm from '@/components/admin-issue-form';
 
 export const metadata = { title: 'Studio' };
 
@@ -39,11 +41,16 @@ function StatCard({ label, value, color }) {
   );
 }
 
+const sectionStyle = {
+  background: '#fff',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-lg)',
+  padding: 20,
+};
+
 export default async function AdminDashboard() {
   if (!isSupabaseConfigured()) return <SetupNotice />;
 
-  // The real gate. proxy.js only did a cookie check; this verifies the JWT
-  // with Supabase and requires an editor role, and RLS backstops both.
   const { profile } = await requireEditor();
 
   const [articles, issues, submissions, categories, authors] = await Promise.all([
@@ -126,66 +133,96 @@ export default async function AdminDashboard() {
         <ArticleForm categories={categories} authors={authors} issues={issues} />
       </section>
 
-      <section
-        style={{
-          background: '#fff',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 20,
-        }}
-      >
+      <section style={{ marginBottom: 24, ...sectionStyle }}>
         <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 18, margin: '0 0 14px' }}>
           Articles
         </h2>
 
         {articles.length === 0 ? (
           <p style={{ fontFamily: 'var(--font-ui)', color: 'var(--text-secondary)', fontSize: 15 }}>
-            No articles yet. Click "New article" above to create your first one.
+            No articles yet. Click &ldquo;New article&rdquo; above to create your first one.
           </p>
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
             {articles.map((a) => (
-              <li
-                key={a.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12,
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'var(--surface-soft)',
-                }}
-              >
-                <span style={{ fontFamily: 'var(--font-ui)', fontSize: 15, fontWeight: 600 }}>
-                  {a.title}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-ui)',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: 'var(--track-tag)',
-                      padding: '4px 10px',
-                      borderRadius: 'var(--radius-pill)',
-                      background:
-                        a.status === 'published' ? 'var(--mint-tint)' : 'var(--tangerine-tint)',
-                      color:
-                        a.status === 'published' ? 'var(--mint-deep)' : 'var(--tangerine-deep)',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {a.status}
+              <li key={a.id}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--surface-soft)',
+                  }}
+                >
+                  <span style={{ fontFamily: 'var(--font-ui)', fontSize: 15, fontWeight: 600 }}>
+                    {a.title}
                   </span>
-                  <PublishToggle article={a} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: 'var(--track-tag)',
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-pill)',
+                        background:
+                          a.status === 'published' ? 'var(--mint-tint)' : 'var(--tangerine-tint)',
+                        color:
+                          a.status === 'published' ? 'var(--mint-deep)' : 'var(--tangerine-deep)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {a.status}
+                    </span>
+                    <EditArticleForm article={a} categories={categories} authors={authors} issues={issues} />
+                    <PublishToggle article={a} />
+                    <DeleteButton article={a} />
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
+        <section style={sectionStyle}>
+          <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 18, margin: '0 0 14px' }}>
+            Authors
+          </h2>
+          {authors.length > 0 && (
+            <ul style={{ listStyle: 'none', margin: '0 0 14px', padding: 0, display: 'grid', gap: 6 }}>
+              {authors.map((a) => (
+                <li key={a.id} style={{ fontFamily: 'var(--font-ui)', fontSize: 14, padding: '6px 10px', background: 'var(--surface-soft)', borderRadius: 'var(--radius-sm)' }}>
+                  {a.name}{a.role ? ` — ${a.role}` : ''}
+                </li>
+              ))}
+            </ul>
+          )}
+          <AuthorForm />
+        </section>
+
+        <section style={sectionStyle}>
+          <h2 style={{ fontFamily: 'var(--font-headline)', fontSize: 18, margin: '0 0 14px' }}>
+            Issues
+          </h2>
+          {issues.length > 0 && (
+            <ul style={{ listStyle: 'none', margin: '0 0 14px', padding: 0, display: 'grid', gap: 6 }}>
+              {issues.map((i) => (
+                <li key={i.id} style={{ fontFamily: 'var(--font-ui)', fontSize: 14, padding: '6px 10px', background: 'var(--surface-soft)', borderRadius: 'var(--radius-sm)' }}>
+                  {i.number ? `№ ${i.number}: ` : ''}{i.title}{i.published ? '' : ' (draft)'}
+                </li>
+              ))}
+            </ul>
+          )}
+          <IssueForm />
+        </section>
+      </div>
     </div>
   );
 }
