@@ -6,6 +6,7 @@ import { signOut } from './login/actions';
 import ArticleForm, { EditArticleForm, PublishToggle, DeleteButton } from '@/components/admin-article-form';
 import AuthorForm from '@/components/admin-author-form';
 import IssueForm from '@/components/admin-issue-form';
+import SendToSubscribersButton from '@/components/send-to-subscribers';
 
 export const metadata = { title: 'Studio' };
 
@@ -181,6 +182,7 @@ export default async function AdminDashboard() {
                     </span>
                     <EditArticleForm article={a} categories={categories} authors={authors} issues={issues} />
                     <PublishToggle article={a} />
+                    {a.status === 'published' && <SendToSubscribersButton article={a} />}
                     <DeleteButton article={a} />
                   </div>
                 </div>
