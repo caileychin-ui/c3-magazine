@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { createServerClient } from '@supabase/ssr';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { getEditor } from '@/lib/dal';
 import { articleEmailHTML, articleEmailText } from '@/lib/email-template';
 import { revalidatePath } from 'next/cache';
@@ -21,7 +21,7 @@ export async function sendToSubscribers(prevState, formData) {
 
   // Fetch the article using a service-role client (so we can read even if
   // the article is a draft — the editor is choosing to send it).
-  const adminClient = createServerClient(
+  const adminClient = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { autoRefreshToken: false, persistSession: false } },

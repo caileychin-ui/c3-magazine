@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 
@@ -17,7 +17,7 @@ export default async function UnsubscribePage({ searchParams }) {
   let notFound = false;
 
   if (emailRaw) {
-    const supabase = createServerClient(
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
       { auth: { autoRefreshToken: false, persistSession: false } },
