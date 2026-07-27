@@ -5,6 +5,7 @@ import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import MarkdownRenderer from '@/components/markdown';
 import ArticleCard from '@/components/article-card';
+import ViewTracker from '@/components/view-tracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,10 +89,12 @@ export default async function ArticlePage({ params }) {
         <div style={{
           fontFamily: 'var(--font-ui)', fontSize: 14, color: 'var(--text-caption)',
           marginBottom: 32, paddingBottom: 20, borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
         }}>
           {author?.name && <span>{author.name}</span>}
           {article.publishDate && <span> · {fmtDate(article.publishDate)}</span>}
           {article.readingTime && <span> · {article.readingTime}</span>}
+          <ViewTracker slug={article.slug} />
         </div>
 
         {/* Content */}

@@ -1,6 +1,7 @@
 import { requireEditor } from '@/lib/dal';
 import { getAllArticlesForAdmin, getAllIssuesForAdmin, getSubmissions, getCategories, getAuthors } from '@/lib/queries';
 import { isSupabaseConfigured } from '@/lib/config';
+import { getViewCounts } from '@/lib/analytics';
 import SetupNotice from '../setup-notice';
 import { signOut } from './login/actions';
 import ArticleForm, { EditArticleForm, PublishToggle, DeleteButton } from '@/components/admin-article-form';
@@ -61,6 +62,10 @@ export default async function AdminDashboard() {
     getCategories(),
     getAuthors(),
   ]);
+
+  // Fetch view counts for all articles
+  const viewCounts = await getViewCounts(articles.map((a) => a.slug));
+  const totalViews = Object.values(viewCounts).reduce((sum, c) => sum + c, 0);
 
   const stats = {
     total: articles.length,
@@ -126,6 +131,7 @@ export default async function AdminDashboard() {
         <StatCard label="Total articles" value={stats.total} color="var(--blue-tint)" />
         <StatCard label="Published" value={stats.published} color="var(--mint-tint)" />
         <StatCard label="Drafts" value={stats.drafts} color="var(--tangerine-tint)" />
+        <StatCard label="Total reads" value={totalViews} color="var(--lavender-tint)" />
         <StatCard label="Issues" value={stats.issues} color="var(--yellow-tint)" />
         <StatCard label="New submissions" value={newSubs} color="var(--pink-tint)" />
       </div>
@@ -160,6 +166,11 @@ export default async function AdminDashboard() {
                 >
                   <span style={{ fontFamily: 'var(--font-ui)', fontSize: 15, fontWeight: 600 }}>
                     {a.title}
+                    {viewCounts[a.slug] > 0 && (
+                      <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-caption)', marginLeft: 8 }}>
+                        👁 {viewCounts[a.slug]}
+                      </span>
+                    )}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span
